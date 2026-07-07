@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Analysis, ChatMessage } from "@/lib/types";
+import type { Analysis, ChatMessage, Transcript } from "@/lib/types";
 
 const MEMORY_RE = /^MEMORY:\s*(.+)$/m;
 
@@ -19,17 +19,32 @@ export function Chat({
   memory,
   onMemory,
   analysis,
+  transcripts,
 }: {
   messages: ChatMessage[];
   onMessages: (m: ChatMessage[]) => void;
   memory: string[];
   onMemory: (notes: string[]) => void;
   analysis: Analysis | null;
+  transcripts: Transcript[];
 }) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // IDs of raw transcripts Compass should ground on (NotebookLM-style sources).
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const availableSources = transcripts.filter((t) => t.text.trim().length > 0);
+  const allSelected =
+    availableSources.length > 0 &&
+    availableSources.every((t) => selectedIds.includes(t.id));
+
+  function toggleSource(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -46,10 +61,18 @@ export function Chat({
     onMessages([...history, { role: "assistant", content: "" }]);
 
     try {
+      const sources = availableSources
+        .filter((t) => selectedIds.includes(t.id))
+        .map((t) => ({ name: t.name, role: t.role, text: t.text }));
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history, analysis, memoryNotes: memory }),
+        body: JSON.stringify({
+          messages: history,
+          analysis,
+          memoryNotes: memory,
+          sources,
+        }),
       });
 
       if (!res.ok || !res.body) {
@@ -94,6 +117,49 @@ export function Chat({
           for company-specific advice.
         </p>
       )}
+
+      <div className="source-picker card">
+        <strong style={{ fontSize: 14 }}>📚 Sources</strong>
+        <p className="muted" style={{ margin: "2px 0 8px" }}>
+          Compass always knows the insights &amp; roadmap. Add raw transcripts to ask
+          about what people actually said, get verbatim quotes, or fact-check a finding.
+        </p>
+        <div className="source-chips">
+          <span
+            className="pill kelp"
+            title={analysis ? "The full analysis is always in context" : "Run the analysis to add this"}
+            style={{ opacity: analysis ? 1 : 0.5 }}
+          >
+            ✓ Insights &amp; roadmap
+          </span>
+          {availableSources.map((t, i) => (
+            <button
+              key={t.id}
+              className={`source-chip${selectedIds.includes(t.id) ? " on" : ""}`}
+              onClick={() => toggleSource(t.id)}
+              aria-pressed={selectedIds.includes(t.id)}
+            >
+              {selectedIds.includes(t.id) ? "✓ " : ""}
+              {t.name || `Transcript ${i + 1}`}
+            </button>
+          ))}
+          {availableSources.length > 1 && (
+            <button
+              className="source-chip"
+              onClick={() =>
+                setSelectedIds(allSelected ? [] : availableSources.map((t) => t.id))
+              }
+            >
+              {allSelected ? "Clear all transcripts" : "All transcripts"}
+            </button>
+          )}
+          {availableSources.length === 0 && (
+            <span className="muted" style={{ fontSize: 13 }}>
+              No transcripts uploaded yet.
+            </span>
+          )}
+        </div>
+      </div>
 
       <div className="chat-panel">
         <div className="chat-scroll" ref={scrollRef}>

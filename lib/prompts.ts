@@ -135,9 +135,16 @@ export function buildSynthesisUserPrompt(peopleJson: string): string {
   return `Here are the structured digests of the employee conversations:\n\n${peopleJson}\n\nProduce the cross-referenced adoption plan as a single JSON object per the specified shape.`;
 }
 
+export interface ChatSource {
+  name: string;
+  role: string;
+  text: string;
+}
+
 export function buildConsultantSystemPrompt(
   analysisJson: string | null,
   memoryNotes: string[],
+  sources: ChatSource[] = [],
 ): string {
   let prompt = `You are "Compass" — The Wild Alaskan Company's in-house AI-adoption consultant. Wild Alaskan (wildalaskancompany.com) is a member-based subscription company delivering wild-caught, sustainably sourced Alaskan seafood to people's doorsteps; its culture values sustainability, craft, and genuinely caring for members.
 
@@ -154,6 +161,16 @@ Formatting: use markdown, keep answers tight, prefer bullet points and numbered 
     prompt += `\n\nHere is the current company analysis built from real employee transcripts (ground your advice in it — reference actual people, themes, and roadmap phases by name):\n<analysis>\n${analysisJson}\n</analysis>`;
   } else {
     prompt += `\n\nNo transcripts have been analyzed yet. You can still teach AI fundamentals, but encourage the user to upload the 7 employee transcripts on the Transcripts tab so you can tailor the roadmap.`;
+  }
+
+  if (sources.length > 0) {
+    const blocks = sources
+      .map(
+        (s, i) =>
+          `<transcript index="${i + 1}" name="${s.name || `Transcript ${i + 1}`}" role="${s.role || "unknown"}">\n${s.text}\n</transcript>`,
+      )
+      .join("\n\n");
+    prompt += `\n\nThe user has also given you the RAW transcripts of these conversations. When a question is about what someone actually said, quote the transcript verbatim and name whose transcript it came from (e.g. "Maya's transcript"). If the analysis and a transcript disagree, trust the transcript and say so.\n\n${blocks}`;
   }
 
   if (memoryNotes.length > 0) {

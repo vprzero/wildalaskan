@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { buildConsultantSystemPrompt } from "@/lib/prompts";
+import { buildConsultantSystemPrompt, type ChatSource } from "@/lib/prompts";
 import type { ChatMessage } from "@/lib/types";
 
 export const maxDuration = 120;
@@ -9,6 +9,8 @@ interface ChatBody {
   messages?: ChatMessage[];
   analysis?: unknown | null;
   memoryNotes?: string[];
+  /** Raw transcripts the user selected as grounding sources. */
+  sources?: ChatSource[];
 }
 
 export async function POST(req: NextRequest) {
@@ -40,9 +42,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const sources = (Array.isArray(body.sources) ? body.sources : [])
+    .filter((s) => s && typeof s.text === "string" && s.text.trim().length > 0)
+    .slice(0, 20)
+    .map((s) => ({
+      name: typeof s.name === "string" ? s.name : "",
+      role: typeof s.role === "string" ? s.role : "",
+      text: s.text,
+    }));
+
   const system = buildConsultantSystemPrompt(
     body.analysis ? JSON.stringify(body.analysis) : null,
     Array.isArray(body.memoryNotes) ? body.memoryNotes.slice(0, 100) : [],
+    sources,
   );
 
   const client = new Anthropic();

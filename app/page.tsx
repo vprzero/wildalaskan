@@ -214,6 +214,7 @@ export default function Home() {
             memory={memory}
             onMemory={setMemory}
             analysis={analysis}
+            transcripts={transcripts}
           />
         )}
       </main>
