@@ -1,22 +1,30 @@
 :root {
-  /* Wild Alaskan-inspired palette: cold ocean + warm salmon */
-  --ocean-deep: #0d2c3d;
-  --ocean: #14435c;
-  --ocean-mist: #3b6e86;
-  --salmon: #e8604c;
-  --salmon-soft: #f3907f;
-  --kelp: #2e7d5b;
-  --sand: #faf6ef;
-  --sand-deep: #f1e9dc;
-  --ink: #1c2b33;
-  --ink-soft: #52646e;
-  --line: #dfd6c6;
+  /*
+   * Wild Alaskan Company brand palette — matched to wildalaskancompany.com:
+   * deep marine navy, signature wild-red CTAs, cream + ice-blue backdrops,
+   * seaweed green and golden accents.
+   * To retheme for any client, edit ONLY this block (and the two font stacks below).
+   */
+  --ocean-deep: #0f3346; /* marine navy — headers, nav, primary surfaces */
+  --ocean: #175a77; /* mid ocean blue */
+  --ocean-mist: #4e93ae; /* ice/sky blue accent */
+  --salmon: #e8492b; /* signature wild red — CTAs, highlights */
+  --salmon-soft: #f4a28f; /* soft salmon */
+  --kelp: #3e7c59; /* seaweed green — success/positive */
+  --sand: #fbf6ed; /* cream page background */
+  --sand-deep: #f3eada; /* deeper cream for wells/chips */
+  --ink: #16323f;
+  --ink-soft: #4f6673;
+  --line: #e3d9c8;
   --card: #ffffff;
 
-  --q-quickwin: #2e7d5b;
-  --q-strategic: #14435c;
-  --q-incremental: #b98a1e;
+  --q-quickwin: #3e7c59;
+  --q-strategic: #175a77;
+  --q-incremental: #cf9722; /* golden — Alaska gold accent */
   --q-reconsider: #8a5568;
+
+  --font-body: "Nunito Sans", "Avenir Next", "Segoe UI", -apple-system, sans-serif;
+  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
 }
 
 * {
@@ -31,7 +39,7 @@ body {
 }
 
 body {
-  font-family: "Avenir Next", "Segoe UI", -apple-system, sans-serif;
+  font-family: var(--font-body);
   background: var(--sand);
   color: var(--ink);
   line-height: 1.55;
@@ -42,8 +50,9 @@ h1,
 h2,
 h3,
 .display {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-display);
   font-weight: 600;
+  font-variation-settings: "SOFT" 60, "WONK" 0, "opsz" 40;
   letter-spacing: -0.01em;
   color: var(--ocean-deep);
 }
@@ -579,7 +588,7 @@ a {
 }
 
 .stat .num {
-  font-family: Georgia, serif;
+  font-family: var(--font-display);
   font-size: 34px;
   line-height: 1.1;
 }
