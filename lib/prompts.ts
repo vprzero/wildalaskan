@@ -1,182 +1,138 @@
-// Prompts + JSON schema used to turn raw transcripts into a structured analysis.
+// Prompts + schemas for the two-stage pipeline:
+//   Stage 1 (digest): one transcript → one PersonInsight (small structured-output schema)
+//   Stage 2 (synthesis): all digests → themes, matrix, roadmap, learning tracks (plain JSON)
+//
+// The stages are split because a single all-in-one schema exceeds the structured-output
+// grammar-compilation limit ("compiled grammar is too large"). The per-person schema is
+// small enough to compile; the synthesis stage skips structured outputs entirely and is
+// parsed defensively server-side.
 
-export const ANALYSIS_SYSTEM_PROMPT = `You are an expert AI-adoption consultant embedded at The Wild Alaskan Company (wildalaskancompany.com) — a member-based seafood subscription company that ships wild-caught, sustainably sourced Alaskan seafood direct to consumers. Teams typically span member experience/support, marketing & creative, operations & fulfillment, sourcing/fisheries, data/engineering, finance, and people ops.
+export const DIGEST_SYSTEM_PROMPT = `You are an expert AI-adoption consultant embedded at The Wild Alaskan Company (wildalaskancompany.com) — a member-based seafood subscription company that ships wild-caught, sustainably sourced Alaskan seafood direct to consumers. Teams typically span member experience/support, marketing & creative, operations & fulfillment, sourcing/fisheries, data/engineering, finance, and people ops.
 
-You are given interview/conversation transcripts from employees. Your job is to produce a rigorous, cross-referenced AI-adoption analysis that maps:
-- each person's pain points (with severity 1-5), opportunities (impact 1-5 vs effort 1-5), wants, and needs
-- shared themes across people (cross-references — who shares which pain), weight 1-5
-- a prioritization matrix (impact vs effort quadrants: quick-win, strategic, incremental, reconsider)
-- a phased onboarding roadmap (start small → pilot → scale) grounded in the actual transcripts
-- role-based learning tracks with concrete sample prompts employees could try on day one
+You are given ONE employee interview/conversation transcript. Digest it into a structured profile of that person:
+- painPoints: every distinct pain, friction, or time sink they describe, with severity 1-5 (1 = minor annoyance, 5 = blocking/painful daily) and a short reusable theme tag (2-4 words, e.g. "Repetitive comms", "Manual tracking") so pains can be cross-referenced across colleagues later
+- opportunities: concrete ways AI could help THIS person, with impact 1-5 and effort 1-5, tagged with the same style of theme
+- wants: things they explicitly say they'd like
+- needs: things they require to succeed with AI even if unstated (training, guardrails, tooling access)
+- aiReadiness: 1 (skeptical / no exposure) to 5 (power user)
+- currentWorkflow: one or two sentences on how they work today
+- quote: one representative verbatim (or near-verbatim) quote from the transcript
 
 Rules:
-- Ground EVERYTHING in the transcripts. Do not invent people or pains that are not evidenced.
-- If a transcript lacks a name, infer a label like "Transcript 3 (Ops)".
-- Quotes must be verbatim or near-verbatim from the transcript.
-- Themes must reference the actual people who raised them.
-- All 1-5 scores are integers between 1 and 5 inclusive.
-- aiReadiness: 1 = skeptical / no exposure, 5 = power user.
-- Quadrants: impact>=4 & effort<=2 → quick-win; impact>=4 & effort>=3 → strategic; impact<=3 & effort<=2 → incremental; else reconsider.
-- Roadmap: 3-4 phases with concrete timeframes (e.g. "Weeks 1-4"), each grounded in who needs what first.
-- Be specific and practical — name real workflows, not generic advice.`;
+- Ground EVERYTHING in the transcript. Do not invent pains that are not evidenced.
+- If the transcript lacks a name, use the provided label.
+- All scores are integers 1-5.
+- Be exhaustive on pain points — capture every distinct one, even small ones.
+- Theme tags should be generic enough that a colleague with the same pain would get the same tag.`;
 
-// JSON Schema for structured outputs (output_config.format).
-// Constraints: additionalProperties:false + required on every object; no numeric min/max
-// (unsupported by structured outputs) — ranges are enforced via prompt instructions.
-export const ANALYSIS_SCHEMA = {
+// Small enough to compile as a structured-output grammar.
+export const PERSON_SCHEMA = {
   type: "object",
   properties: {
-    companySummary: {
-      type: "string",
-      description: "3-5 sentence synthesis of where the org stands on AI readiness and the biggest levers.",
-    },
-    people: {
+    name: { type: "string" },
+    role: { type: "string" },
+    department: { type: "string" },
+    aiReadiness: { type: "integer", description: "1-5" },
+    currentWorkflow: { type: "string" },
+    painPoints: {
       type: "array",
       items: {
         type: "object",
         properties: {
-          name: { type: "string" },
-          role: { type: "string" },
-          department: { type: "string" },
-          aiReadiness: { type: "integer", description: "1-5" },
-          currentWorkflow: { type: "string" },
-          painPoints: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                text: { type: "string" },
-                severity: { type: "integer", description: "1-5" },
-                theme: { type: "string" },
-              },
-              required: ["text", "severity", "theme"],
-              additionalProperties: false,
-            },
-          },
-          opportunities: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                text: { type: "string" },
-                impact: { type: "integer", description: "1-5" },
-                effort: { type: "integer", description: "1-5" },
-                theme: { type: "string" },
-              },
-              required: ["text", "impact", "effort", "theme"],
-              additionalProperties: false,
-            },
-          },
-          wants: { type: "array", items: { type: "string" } },
-          needs: { type: "array", items: { type: "string" } },
-          quote: { type: "string", description: "Representative verbatim quote from the transcript." },
+          text: { type: "string" },
+          severity: { type: "integer", description: "1-5" },
+          theme: { type: "string" },
         },
-        required: [
-          "name",
-          "role",
-          "department",
-          "aiReadiness",
-          "currentWorkflow",
-          "painPoints",
-          "opportunities",
-          "wants",
-          "needs",
-          "quote",
-        ],
+        required: ["text", "severity", "theme"],
         additionalProperties: false,
       },
     },
-    themes: {
+    opportunities: {
       type: "array",
       items: {
         type: "object",
         properties: {
-          name: { type: "string" },
-          description: { type: "string" },
-          people: { type: "array", items: { type: "string" } },
-          weight: { type: "integer", description: "1-5" },
-        },
-        required: ["name", "description", "people", "weight"],
-        additionalProperties: false,
-      },
-    },
-    matrix: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          rationale: { type: "string" },
+          text: { type: "string" },
           impact: { type: "integer", description: "1-5" },
           effort: { type: "integer", description: "1-5" },
-          beneficiaries: { type: "array", items: { type: "string" } },
-          quadrant: {
-            type: "string",
-            enum: ["quick-win", "strategic", "incremental", "reconsider"],
-          },
+          theme: { type: "string" },
         },
-        required: ["title", "rationale", "impact", "effort", "beneficiaries", "quadrant"],
+        required: ["text", "impact", "effort", "theme"],
         additionalProperties: false,
       },
     },
-    roadmap: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-          timeframe: { type: "string" },
-          objective: { type: "string" },
-          initiatives: { type: "array", items: { type: "string" } },
-          targetTeams: { type: "array", items: { type: "string" } },
-          tools: { type: "array", items: { type: "string" } },
-          successMetrics: { type: "array", items: { type: "string" } },
-        },
-        required: ["name", "timeframe", "objective", "initiatives", "targetTeams", "tools", "successMetrics"],
-        additionalProperties: false,
-      },
-    },
-    learningTracks: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          audience: { type: "string" },
-          level: { type: "string", enum: ["Foundations", "Applied", "Advanced"] },
-          summary: { type: "string" },
-          skills: { type: "array", items: { type: "string" } },
-          samplePrompts: { type: "array", items: { type: "string" } },
-        },
-        required: ["audience", "level", "summary", "skills", "samplePrompts"],
-        additionalProperties: false,
-      },
-    },
-    whereToStart: { type: "array", items: { type: "string" } },
-    risks: { type: "array", items: { type: "string" } },
+    wants: { type: "array", items: { type: "string" } },
+    needs: { type: "array", items: { type: "string" } },
+    quote: { type: "string" },
   },
   required: [
-    "companySummary",
-    "people",
-    "themes",
-    "matrix",
-    "roadmap",
-    "learningTracks",
-    "whereToStart",
-    "risks",
+    "name",
+    "role",
+    "department",
+    "aiReadiness",
+    "currentWorkflow",
+    "painPoints",
+    "opportunities",
+    "wants",
+    "needs",
+    "quote",
   ],
   additionalProperties: false,
 } as const;
 
-export function buildAnalysisUserPrompt(
-  transcripts: { name: string; role: string; text: string }[],
-): string {
-  const blocks = transcripts
-    .map(
-      (t, i) =>
-        `<transcript index="${i + 1}" name="${t.name || `Transcript ${i + 1}`}" role="${t.role || "unknown"}">\n${t.text}\n</transcript>`,
-    )
-    .join("\n\n");
-  return `Here are ${transcripts.length} employee conversation transcripts from The Wild Alaskan Company:\n\n${blocks}\n\nProduce the full cross-referenced AI-adoption analysis as JSON per the schema.`;
+export function buildDigestUserPrompt(t: {
+  name: string;
+  role: string;
+  text: string;
+  label: string;
+}): string {
+  return `Digest this transcript into the structured profile.
+
+Person label (use as name if none appears in the conversation): ${t.name || t.label}
+Role/team if known: ${t.role || "unknown"}
+
+<transcript>
+${t.text}
+</transcript>`;
+}
+
+export const SYNTHESIS_SYSTEM_PROMPT = `You are an expert AI-adoption consultant for The Wild Alaskan Company (wildalaskancompany.com) — a member-based seafood subscription company shipping wild-caught, sustainably sourced Alaskan seafood direct to consumers.
+
+You are given structured digests of employee interviews (already extracted from transcripts). Cross-reference them into a company-wide AI adoption plan.
+
+Respond with ONLY a JSON object — no markdown fences, no prose before or after — with exactly these keys:
+
+{
+  "companySummary": string,           // 3-5 sentences: where the org stands on AI readiness and the biggest levers
+  "themes": [                          // shared themes across people; merge similar theme tags
+    { "name": string, "description": string, "people": string[], "weight": int 1-5 }
+  ],
+  "matrix": [                          // 6-12 prioritized initiatives derived from the opportunities
+    { "title": string, "rationale": string, "impact": int 1-5, "effort": int 1-5,
+      "beneficiaries": string[],       // people and/or teams helped
+      "quadrant": "quick-win" | "strategic" | "incremental" | "reconsider" }
+  ],
+  "roadmap": [                         // 3-4 phases
+    { "name": string, "timeframe": string (e.g. "Weeks 1-4"), "objective": string,
+      "initiatives": string[], "targetTeams": string[], "tools": string[], "successMetrics": string[] }
+  ],
+  "learningTracks": [                  // one per audience/team represented in the digests
+    { "audience": string, "level": "Foundations" | "Applied" | "Advanced", "summary": string,
+      "skills": string[], "samplePrompts": string[] }  // 3-5 copy-pasteable prompts grounded in their actual work
+  ],
+  "whereToStart": string[],            // 3-5 concrete first moves, ordered
+  "risks": string[]                    // guardrails incl. member PII / data safety
+}
+
+Rules:
+- Ground everything in the digests; reference actual people by name in themes and beneficiaries.
+- Quadrants: impact>=4 & effort<=2 → quick-win; impact>=4 & effort>=3 → strategic; impact<=3 & effort<=2 → incremental; else reconsider.
+- Phase 1 of the roadmap should target the highest-pain, most-ready people first.
+- Be specific and practical — name real workflows from the digests, not generic advice.
+- All scores are integers 1-5.`;
+
+export function buildSynthesisUserPrompt(peopleJson: string): string {
+  return `Here are the structured digests of the employee conversations:\n\n${peopleJson}\n\nProduce the cross-referenced adoption plan as a single JSON object per the specified shape.`;
 }
 
 export function buildConsultantSystemPrompt(

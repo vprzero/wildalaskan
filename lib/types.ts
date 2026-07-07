@@ -8,6 +8,10 @@ export interface Transcript {
   role: string;
   /** Raw transcript text. */
   text: string;
+  /** Cached digest of this transcript (stage 1 output). */
+  digest?: PersonInsight;
+  /** Hash of name+role+text at digest time — invalidates the cache on edits. */
+  digestHash?: string;
 }
 
 export interface PainPoint {

@@ -32,7 +32,12 @@ Works out of the box on Vercel — set `ANTHROPIC_API_KEY` as an environment var
 
 - **Next.js 14** (App Router) + React 18 + TypeScript
 - **Claude** (`claude-opus-4-8`) via `@anthropic-ai/sdk`
-  - Structured outputs (`output_config.format`) guarantee the analysis matches a strict JSON schema
+  - **Two-stage pipeline:** each transcript is first *digested* individually
+    (`/api/digest`, small structured-output schema → guaranteed-valid person profile),
+    then the compact digests are *synthesized* (`/api/analyze`) into themes, matrix,
+    roadmap, and learning tracks. This keeps every call small — transcripts of any
+    length work, and the one-big-schema "compiled grammar is too large" error is avoided.
+  - Digests are cached by content hash, so re-runs only process new/edited transcripts
   - Adaptive thinking for deeper cross-referencing
   - Streaming chat responses; prompt caching on the (large, stable) analysis context
 - No database — client-side persistence keeps the app zero-config

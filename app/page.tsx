@@ -8,8 +8,9 @@ import { Matrix } from "@/components/Matrix";
 import { People } from "@/components/People";
 import { Roadmap } from "@/components/Roadmap";
 import { Transcripts } from "@/components/Transcripts";
+import { contentHash } from "@/lib/hash";
 import { store } from "@/lib/store";
-import type { Analysis, ChatMessage, Transcript } from "@/lib/types";
+import type { Analysis, ChatMessage, PersonInsight, Transcript } from "@/lib/types";
 
 type Tab =
   | "transcripts"
@@ -38,6 +39,7 @@ export default function Home() {
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [memory, setMemory] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Hydrate from localStorage once on the client.
@@ -65,27 +67,79 @@ export default function Home() {
     if (hydrated) store.saveMemory(memory);
   }, [memory, hydrated]);
 
+  async function digestOne(t: Transcript, index: number): Promise<PersonInsight> {
+    const res = await fetch("/api/digest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: t.name,
+        role: t.role,
+        text: t.text,
+        label: `Transcript ${index + 1}`,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(
+        `${t.name || `Transcript ${index + 1}`}: ${data?.error ?? `digest failed (${res.status})`}`,
+      );
+    }
+    return data.person as PersonInsight;
+  }
+
+  // Two-stage pipeline: digest each transcript individually (cached by content hash),
+  // then synthesize the compact digests into the company-wide plan.
   async function analyze() {
     setError(null);
     setAnalyzing(true);
     try {
+      const working = [...transcripts];
+      const jobs = working
+        .map((t, i) => ({ t, i }))
+        .filter(({ t }) => t.text.trim().length > 0);
+
+      // Stage 1 — digest, skipping transcripts whose cached digest is still fresh.
+      const stale = jobs.filter(
+        ({ t }) => !t.digest || t.digestHash !== contentHash(t.name + t.role + t.text),
+      );
+      let done = 0;
+      const CONCURRENCY = 3;
+      for (let batch = 0; batch < stale.length; batch += CONCURRENCY) {
+        const slice = stale.slice(batch, batch + CONCURRENCY);
+        setProgress(
+          `Digesting transcripts ${done + 1}–${Math.min(done + slice.length, stale.length)} of ${stale.length}…`,
+        );
+        const results = await Promise.all(slice.map(({ t, i }) => digestOne(t, i)));
+        slice.forEach(({ t, i }, j) => {
+          working[i] = {
+            ...t,
+            digest: results[j],
+            digestHash: contentHash(t.name + t.role + t.text),
+          };
+        });
+        done += slice.length;
+        setTranscripts([...working]);
+      }
+
+      // Stage 2 — synthesize across all digests.
+      setProgress("Cross-referencing digests into the roadmap…");
+      const people = working
+        .filter((t) => t.text.trim().length > 0 && t.digest)
+        .map((t) => t.digest as PersonInsight);
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transcripts: transcripts
-            .filter((t) => t.text.trim().length > 0)
-            .map(({ name, role, text }) => ({ name, role, text })),
-        }),
+        body: JSON.stringify({ people }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? `Analysis failed (${res.status})`);
+      if (!res.ok) throw new Error(data?.error ?? `Synthesis failed (${res.status})`);
       setAnalysis(data.analysis as Analysis);
       setTab("dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed.");
     } finally {
       setAnalyzing(false);
+      setProgress(null);
     }
   }
 
@@ -144,6 +198,7 @@ export default function Home() {
             onChange={setTranscripts}
             onAnalyze={() => void analyze()}
             analyzing={analyzing}
+            progress={progress}
             hasAnalysis={!!analysis}
           />
         )}

@@ -19,12 +19,14 @@ export function Transcripts({
   onChange,
   onAnalyze,
   analyzing,
+  progress,
   hasAnalysis,
 }: {
   transcripts: Transcript[];
   onChange: (t: Transcript[]) => void;
   onAnalyze: () => void;
   analyzing: boolean;
+  progress: string | null;
   hasAnalysis: boolean;
 }) {
   const [dragging, setDragging] = useState(false);
@@ -33,7 +35,12 @@ export function Transcripts({
   const filled = transcripts.filter((t) => t.text.trim().length > 0);
 
   function update(id: string, patch: Partial<Transcript>) {
-    onChange(transcripts.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    // Editing content invalidates the cached digest for that transcript.
+    onChange(
+      transcripts.map((t) =>
+        t.id === id ? { ...t, ...patch, digest: undefined, digestHash: undefined } : t,
+      ),
+    );
   }
 
   function remove(id: string) {
@@ -125,9 +132,11 @@ export function Transcripts({
           </button>
         </div>
         {analyzing && (
-          <p className="muted" style={{ marginTop: 10 }}>
-            Claude is reading every conversation, scoring pain points, and
-            cross-referencing themes. This usually takes one to three minutes.
+          <p className="muted" style={{ marginTop: 10 }} aria-live="polite">
+            {progress ??
+              "Claude is reading every conversation, scoring pain points, and cross-referencing themes."}{" "}
+            Each transcript is digested individually, then cross-referenced — already-digested
+            transcripts are skipped, so re-runs are fast.
           </p>
         )}
       </div>
@@ -138,6 +147,13 @@ export function Transcripts({
             <strong className="display" style={{ fontSize: 16 }}>
               Transcript {i + 1}
             </strong>
+            {t.digest ? (
+              <span className="pill kelp" title="Digested — will be skipped on re-runs unless edited">
+                ✓ digested
+              </span>
+            ) : t.text.trim() ? (
+              <span className="pill">not digested yet</span>
+            ) : null}
             <input
               placeholder="Name (e.g. Maya)"
               value={t.name}
