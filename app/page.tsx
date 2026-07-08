@@ -67,24 +67,45 @@ export default function Home() {
     if (hydrated) store.saveMemory(memory);
   }, [memory, hydrated]);
 
+  // Digest one transcript, retrying transient failures (overloaded/rate-limit/gateway)
+  // with backoff before surfacing an error to the user.
   async function digestOne(t: Transcript, index: number): Promise<PersonInsight> {
-    const res = await fetch("/api/digest", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: t.name,
-        role: t.role,
-        text: t.text,
-        label: `Transcript ${index + 1}`,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(
-        `${t.name || `Transcript ${index + 1}`}: ${data?.error ?? `digest failed (${res.status})`}`,
-      );
+    const RETRYABLE = [429, 502, 503, 529];
+    const DELAYS_MS = [4000, 12000, 30000];
+    let lastError = "digest failed";
+    for (let attempt = 0; attempt <= DELAYS_MS.length; attempt++) {
+      const res = await fetch("/api/digest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: t.name,
+          role: t.role,
+          text: t.text,
+          label: `Transcript ${index + 1}`,
+        }),
+      }).catch(() => null);
+
+      if (res?.ok) {
+        const data = await res.json();
+        return data.person as PersonInsight;
+      }
+
+      if (res) {
+        const data = await res.json().catch(() => null);
+        lastError = data?.error ?? `digest failed (${res.status})`;
+        if (!RETRYABLE.includes(res.status)) break;
+      } else {
+        lastError = "network error while digesting";
+      }
+
+      if (attempt < DELAYS_MS.length) {
+        setProgress(
+          `Claude is busy — retrying ${t.name || `Transcript ${index + 1}`} in ${DELAYS_MS[attempt] / 1000}s…`,
+        );
+        await new Promise((r) => setTimeout(r, DELAYS_MS[attempt]));
+      }
     }
-    return data.person as PersonInsight;
+    throw new Error(`${t.name || `Transcript ${index + 1}`}: ${lastError}`);
   }
 
   // Two-stage pipeline: digest each transcript individually (cached by content hash),
@@ -109,31 +130,54 @@ export default function Home() {
         setProgress(
           `Digesting transcripts ${done + 1}–${Math.min(done + slice.length, stale.length)} of ${stale.length}…`,
         );
-        const results = await Promise.all(slice.map(({ t, i }) => digestOne(t, i)));
+        // Settle the whole batch so one failure doesn't discard sibling digests.
+        const results = await Promise.allSettled(slice.map(({ t, i }) => digestOne(t, i)));
+        const failures: string[] = [];
         slice.forEach(({ t, i }, j) => {
-          working[i] = {
-            ...t,
-            digest: results[j],
-            digestHash: contentHash(t.name + t.role + t.text),
-          };
+          const r = results[j];
+          if (r.status === "fulfilled") {
+            working[i] = {
+              ...t,
+              digest: r.value,
+              digestHash: contentHash(t.name + t.role + t.text),
+            };
+          } else {
+            failures.push(r.reason instanceof Error ? r.reason.message : String(r.reason));
+          }
         });
         done += slice.length;
         setTranscripts([...working]);
+        if (failures.length > 0) {
+          throw new Error(
+            `${failures.join(" · ")} — everything else was digested and saved; click the button again to retry just the failed one${failures.length === 1 ? "" : "s"}.`,
+          );
+        }
       }
 
-      // Stage 2 — synthesize across all digests.
-      setProgress("Cross-referencing digests into the roadmap…");
+      // Stage 2 — synthesize across all digests (with the same transient-error retry).
       const people = working
         .filter((t) => t.text.trim().length > 0 && t.digest)
         .map((t) => t.digest as PersonInsight);
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ people }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? `Synthesis failed (${res.status})`);
-      setAnalysis(data.analysis as Analysis);
+      const RETRYABLE = [429, 502, 503, 529];
+      const DELAYS_MS = [4000, 12000, 30000];
+      let data: { analysis?: Analysis; error?: string } | null = null;
+      for (let attempt = 0; attempt <= DELAYS_MS.length; attempt++) {
+        setProgress("Cross-referencing digests into the roadmap…");
+        const res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ people }),
+        }).catch(() => null);
+        data = res ? await res.json().catch(() => null) : null;
+        if (res?.ok && data?.analysis) break;
+        const retryable = !res || RETRYABLE.includes(res.status);
+        if (!retryable || attempt === DELAYS_MS.length) {
+          throw new Error(data?.error ?? `Synthesis failed${res ? ` (${res.status})` : ""}`);
+        }
+        setProgress(`Claude is busy — retrying the synthesis in ${DELAYS_MS[attempt] / 1000}s…`);
+        await new Promise((r) => setTimeout(r, DELAYS_MS[attempt]));
+      }
+      setAnalysis(data!.analysis as Analysis);
       setTab("dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed.");

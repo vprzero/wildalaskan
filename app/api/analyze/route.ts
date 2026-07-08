@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { anthropicErrorResponse } from "@/lib/api-errors";
 import { SYNTHESIS_SYSTEM_PROMPT, buildSynthesisUserPrompt } from "@/lib/prompts";
 import type { Analysis, MatrixItem, PersonInsight } from "@/lib/types";
 
@@ -133,7 +134,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const client = new Anthropic();
+  const client = new Anthropic({ maxRetries: 5 });
 
   try {
     const stream = client.messages.stream({
@@ -179,19 +180,9 @@ export async function POST(req: NextRequest) {
     };
     return NextResponse.json({ analysis });
   } catch (error) {
-    if (error instanceof Anthropic.RateLimitError) {
-      return NextResponse.json(
-        { error: "Rate limited — wait a minute and retry." },
-        { status: 429 },
-      );
-    }
-    if (error instanceof Anthropic.APIError) {
-      return NextResponse.json(
-        { error: `Claude API error (${error.status}): ${error.message}` },
-        { status: 502 },
-      );
-    }
-    const msg = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return anthropicErrorResponse(
+      error,
+      "Your transcript digests are already saved — retrying only re-runs the final synthesis step.",
+    );
   }
 }

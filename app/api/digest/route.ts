@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { anthropicErrorResponse } from "@/lib/api-errors";
 import { DIGEST_SYSTEM_PROMPT, PERSON_SCHEMA, buildDigestUserPrompt } from "@/lib/prompts";
 import type { PersonInsight } from "@/lib/types";
 
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Transcript text is empty." }, { status: 400 });
   }
 
-  const client = new Anthropic();
+  const client = new Anthropic({ maxRetries: 5 });
 
   try {
     const stream = client.messages.stream({
@@ -80,19 +81,9 @@ export async function POST(req: NextRequest) {
     const person = JSON.parse(textBlock.text) as PersonInsight;
     return NextResponse.json({ person });
   } catch (error) {
-    if (error instanceof Anthropic.RateLimitError) {
-      return NextResponse.json(
-        { error: "Rate limited — wait a minute and retry." },
-        { status: 429 },
-      );
-    }
-    if (error instanceof Anthropic.APIError) {
-      return NextResponse.json(
-        { error: `Claude API error (${error.status}): ${error.message}` },
-        { status: 502 },
-      );
-    }
-    const msg = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return anthropicErrorResponse(
+      error,
+      "Already-digested transcripts are cached, so retrying only re-processes the ones that failed.",
+    );
   }
 }
