@@ -11,8 +11,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
-    "@fontsource-variable/fraunces": "^5.2.9",
-    "@fontsource/nunito-sans": "^5.2.7",
     "next": "14.2.15",
     "react": "18.3.1",
     "react-dom": "18.3.1"

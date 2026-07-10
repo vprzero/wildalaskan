@@ -1,30 +1,33 @@
 :root {
   /*
-   * Wild Alaskan Company brand palette — matched to wildalaskancompany.com:
-   * deep marine navy, signature wild-red CTAs, cream + ice-blue backdrops,
-   * seaweed green and golden accents.
-   * To retheme for any client, edit ONLY this block (and the two font stacks below).
+   * Wild Alaskan Company — official brand tokens.
+   * Palette: Midnight Navy #16263D (primary), White (primary bg),
+   * Alaskan Blue #3E6E99 (secondary), Alaska Gold #E0A33C (sparing accent),
+   * Cream/Sand #F5F1E8 (warm neutral), Glacier #7FB0D3, Warm Grey #6B6F76, Ink #1A1F26.
+   * Variable names are legacy (--ocean-deep, --salmon, ...) — values are canon.
+   * To retheme, edit ONLY this block (and the two font stacks).
    */
-  --ocean-deep: #0f3346; /* marine navy — headers, nav, primary surfaces */
-  --ocean: #175a77; /* mid ocean blue */
-  --ocean-mist: #4e93ae; /* ice/sky blue accent */
-  --salmon: #e8492b; /* signature wild red — CTAs, highlights */
-  --salmon-soft: #f4a28f; /* soft salmon */
-  --kelp: #3e7c59; /* seaweed green — success/positive */
-  --sand: #fbf6ed; /* cream page background */
-  --sand-deep: #f3eada; /* deeper cream for wells/chips */
-  --ink: #16323f;
-  --ink-soft: #4f6673;
-  --line: #e3d9c8;
+  --ocean-deep: #16263d; /* Midnight Navy — wordmark, headers, primary surfaces */
+  --ocean: #3e6e99; /* Alaskan Blue — secondary */
+  --ocean-mist: #7fb0d3; /* Glacier */
+  --salmon: #e0a33c; /* Alaska Gold — sparing accent (decorative only, not text-on-white) */
+  --salmon-soft: #edc98e; /* soft gold */
+  --gold-deep: #8a5f16; /* dark gold — gold that must be legible as text */
+  --kelp: #3e6e99; /* success/positive → Alaskan Blue (no green in brand palette) */
+  --sand: #ffffff; /* White — primary background */
+  --sand-deep: #f5f1e8; /* Cream/Sand — warm neutral wells & chips */
+  --ink: #1a1f26; /* Ink — body text */
+  --ink-soft: #6b6f76; /* Warm Grey */
+  --line: #e6e1d5;
   --card: #ffffff;
 
-  --q-quickwin: #3e7c59;
-  --q-strategic: #175a77;
-  --q-incremental: #cf9722; /* golden — Alaska gold accent */
-  --q-reconsider: #8a5568;
+  --q-quickwin: #3e6e99; /* Alaskan Blue */
+  --q-strategic: #16263d; /* Midnight Navy */
+  --q-incremental: #b07d1f; /* Alaska Gold, darkened for legibility */
+  --q-reconsider: #6b6f76; /* Warm Grey */
 
-  --font-body: "Nunito Sans", "Avenir Next", "Segoe UI", -apple-system, sans-serif;
-  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --font-body: "Helvetica Neue", Helvetica, Arial, Inter, system-ui, sans-serif;
+  --font-display: "Iowan Old Style", Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
 
 * {
@@ -52,7 +55,6 @@ h3,
 .display {
   font-family: var(--font-display);
   font-weight: 600;
-  font-variation-settings: "SOFT" 60, "WONK" 0, "opsz" 40;
   letter-spacing: -0.01em;
   color: var(--ocean-deep);
 }
@@ -100,7 +102,7 @@ a {
 }
 
 .masthead h1 .accent {
-  color: var(--salmon);
+  color: #b07d1f; /* Alaska Gold, darkened enough to read as large text on white */
   font-style: italic;
 }
 
@@ -188,13 +190,13 @@ a {
 }
 
 .pill.salmon {
-  background: #fbe4df;
-  color: #a33a2a;
+  background: #f7e9cd;
+  color: var(--gold-deep);
 }
 
 .pill.kelp {
-  background: #dff0e7;
-  color: var(--kelp);
+  background: #e4edf5;
+  color: var(--ocean);
 }
 
 .btn {
@@ -206,16 +208,16 @@ a {
 }
 
 .btn.primary {
-  background: var(--salmon);
+  background: var(--ocean-deep);
   color: #fff;
 }
 
 .btn.primary:hover {
-  background: #d54f3b;
+  background: #0e1a2c;
 }
 
 .btn.primary:disabled {
-  background: var(--salmon-soft);
+  background: #9db3c9;
   cursor: wait;
 }
 
@@ -236,9 +238,9 @@ a {
 }
 
 .error-banner {
-  background: #fbe4df;
+  background: #f9f0dd;
   border: 1px solid var(--salmon);
-  color: #7c2417;
+  color: #5d4310;
   border-radius: 8px;
   padding: 12px 16px;
   margin: 12px 0;
@@ -287,14 +289,14 @@ a {
   border-radius: 8px;
   padding: 12px;
   resize: vertical;
-  background: #fffdf9;
+  background: #fbf9f3;
 }
 
 .transcript-editor input {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 12px;
-  background: #fffdf9;
+  background: #fbf9f3;
 }
 
 .dropzone {
@@ -303,7 +305,7 @@ a {
   padding: 28px;
   text-align: center;
   color: var(--ink-soft);
-  background: #fffdf9;
+  background: #fbf9f3;
   transition: border-color 0.15s;
 }
 
@@ -353,7 +355,7 @@ a {
   background:
     linear-gradient(to right, transparent calc(50% - 1px), var(--line) calc(50% - 1px), var(--line) calc(50% + 1px), transparent calc(50% + 1px)),
     linear-gradient(to bottom, transparent calc(50% - 1px), var(--line) calc(50% - 1px), var(--line) calc(50% + 1px), transparent calc(50% + 1px)),
-    #fffdf9;
+    #fbf9f3;
   border: 1px solid var(--line);
   border-radius: 12px;
 }
@@ -447,7 +449,7 @@ a {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--salmon);
+  color: var(--gold-deep);
 }
 
 .phase ul {
@@ -470,7 +472,7 @@ a {
 
 .source-chip {
   border: 1.5px solid var(--line);
-  background: #fffdf9;
+  background: #fbf9f3;
   color: var(--ink-soft);
   border-radius: 999px;
   padding: 5px 14px;
@@ -536,7 +538,7 @@ a {
   gap: 10px;
   border-top: 1px solid var(--line);
   padding: 14px;
-  background: #fffdf9;
+  background: #fbf9f3;
 }
 
 .chat-input textarea {
@@ -566,7 +568,7 @@ a {
 .memory-list button {
   background: none;
   border: none;
-  color: var(--salmon);
+  color: var(--ocean);
   font-size: 12px;
   font-weight: 700;
 }
