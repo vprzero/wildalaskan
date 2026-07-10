@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-// Brand typography is all system-stack (Iowan/Palatino/Georgia + Helvetica Neue/Arial)
-// per the client's brand standards — no webfont downloads needed.
+// Display font: Baloo 2 — closest webfont match to the chunky hand-cut headline
+// lettering on wildalaskancompany.com. Body stays on the Helvetica Neue system stack.
+import "@fontsource/baloo-2/600.css";
+import "@fontsource/baloo-2/700.css";
+import "@fontsource/baloo-2/800.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

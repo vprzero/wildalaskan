@@ -203,39 +203,45 @@ export default function Home() {
   }
 
   return (
-    <div className="app-shell">
-      <header className="masthead">
-        <div>
-          <h1>
-            AI <span className="accent">Compass</span>
-          </h1>
-          <p className="sub">
-            The Wild Alaskan Company · from 7 conversations to a company-wide AI
-            onboarding roadmap
-          </p>
+    <>
+      <div className="topbar">
+        <div className="topbar-inner">
+          <header className="masthead">
+            <div>
+              <h1>
+                AI <span className="accent">Compass</span>
+              </h1>
+              <p className="sub">The Wild Alaskan Company</p>
+            </div>
+            <button className="btn ghost" onClick={resetAll}>
+              Reset everything
+            </button>
+          </header>
+
+          <nav className="tabbar" aria-label="Sections">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                className={tab === t.id ? "active" : ""}
+                disabled={t.needsAnalysis && !analysis}
+                title={t.needsAnalysis && !analysis ? "Run the analysis first" : undefined}
+                onClick={() => setTab(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
         </div>
-        <button className="btn ghost" onClick={resetAll}>
-          Reset everything
-        </button>
-      </header>
+      </div>
 
-      <nav className="tabbar" aria-label="Sections">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            className={tab === t.id ? "active" : ""}
-            disabled={t.needsAnalysis && !analysis}
-            title={t.needsAnalysis && !analysis ? "Run the analysis first" : undefined}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
+      <div className="gold-band">
+        From 7 conversations to a company-wide AI onboarding roadmap
+      </div>
 
-      {error && <p className="error-banner">{error}</p>}
+      <div className="app-shell">
+        {error && <p className="error-banner">{error}</p>}
 
-      <main className="tab-body">
+        <main className="tab-body">
         {tab === "transcripts" && (
           <Transcripts
             transcripts={transcripts}
@@ -261,7 +267,16 @@ export default function Home() {
             transcripts={transcripts}
           />
         )}
-      </main>
-    </div>
+        </main>
+      </div>
+
+      <footer className="footer">
+        <div className="footer-scallop" aria-hidden />
+        <div className="footer-inner">
+          <span className="wordmark">Wild Alaskan Company</span>
+          <span>AI Compass · built for the crew, powered by Claude</span>
+        </div>
+      </footer>
+    </>
   );
 }

@@ -7,27 +7,27 @@
    * Variable names are legacy (--ocean-deep, --salmon, ...) — values are canon.
    * To retheme, edit ONLY this block (and the two font stacks).
    */
-  --ocean-deep: #16263d; /* Midnight Navy — wordmark, headers, primary surfaces */
-  --ocean: #3e6e99; /* Alaskan Blue — secondary */
-  --ocean-mist: #7fb0d3; /* Glacier */
-  --salmon: #e0a33c; /* Alaska Gold — sparing accent (decorative only, not text-on-white) */
-  --salmon-soft: #edc98e; /* soft gold */
-  --gold-deep: #8a5f16; /* dark gold — gold that must be legible as text */
-  --kelp: #3e6e99; /* success/positive → Alaskan Blue (no green in brand palette) */
-  --sand: #ffffff; /* White — primary background */
-  --sand-deep: #f5f1e8; /* Cream/Sand — warm neutral wells & chips */
-  --ink: #1a1f26; /* Ink — body text */
-  --ink-soft: #6b6f76; /* Warm Grey */
-  --line: #e6e1d5;
+  --ocean-deep: #12344e; /* site navy — headlines, card bands, footer */
+  --ocean: #2a5d80; /* secondary blue */
+  --ocean-mist: #7fb0d3; /* glacier */
+  --salmon: #f7a81b; /* site marigold gold — CTAs (always with navy text) */
+  --salmon-soft: #fbd58a; /* soft gold */
+  --gold-deep: #8a5f16; /* dark gold — gold that must be legible as small text */
+  --kelp: #1f8fa0; /* ocean teal — success/positive */
+  --sand: #e7edf1; /* ice blue — page/section background (per site) */
+  --sand-deep: #dbe4eb; /* deeper ice for chips & meter tracks */
+  --ink: #1a2b38;
+  --ink-soft: #55676f;
+  --line: #d4dee5;
   --card: #ffffff;
 
-  --q-quickwin: #3e6e99; /* Alaskan Blue */
-  --q-strategic: #16263d; /* Midnight Navy */
-  --q-incremental: #b07d1f; /* Alaska Gold, darkened for legibility */
-  --q-reconsider: #6b6f76; /* Warm Grey */
+  --q-quickwin: #1f8fa0; /* ocean teal */
+  --q-strategic: #12344e; /* navy */
+  --q-incremental: #b07d1f; /* deep gold */
+  --q-reconsider: #6b6f76; /* warm grey */
 
   --font-body: "Helvetica Neue", Helvetica, Arial, Inter, system-ui, sans-serif;
-  --font-display: "Iowan Old Style", Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-display: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
 }
 
 * {
@@ -54,8 +54,8 @@ h2,
 h3,
 .display {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: 0;
   color: var(--ocean-deep);
 }
 
@@ -87,23 +87,35 @@ a {
   padding: 0 24px 80px;
 }
 
+/* White nav bar with a gold top accent, like the site header. */
+.topbar {
+  background: #fff;
+  border-top: 4px solid var(--salmon);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
 .masthead {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 28px 0 18px;
-  border-bottom: 3px solid var(--ocean-deep);
+  padding: 20px 0 6px;
 }
 
 .masthead h1 {
-  font-size: 28px;
+  font-size: 30px;
+  font-weight: 800;
 }
 
 .masthead h1 .accent {
-  color: #b07d1f; /* Alaska Gold, darkened enough to read as large text on white */
-  font-style: italic;
+  color: #b07d1f;
 }
 
 .masthead .sub {
@@ -111,41 +123,88 @@ a {
   font-size: 14px;
 }
 
+/* Gold promo-style band under the header, echoing the site's offer banner. */
+.gold-band {
+  background: var(--salmon);
+  color: var(--ocean-deep);
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  padding: 9px 16px;
+}
+
 .tabbar {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  padding: 14px 0;
+  padding: 10px 0 14px;
   position: sticky;
   top: 0;
-  background: var(--sand);
+  background: #fff;
   z-index: 10;
-  border-bottom: 1px solid var(--line);
 }
 
 .tabbar button {
   border: 1px solid transparent;
   background: transparent;
-  color: var(--ink-soft);
+  color: var(--ocean-deep);
   padding: 8px 14px;
   border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
 }
 
 .tabbar button:hover {
-  color: var(--ocean-deep);
-  background: var(--sand-deep);
+  background: var(--sand);
 }
 
 .tabbar button.active {
-  background: var(--ocean-deep);
-  color: #fff;
+  background: var(--salmon);
+  color: var(--ocean-deep);
 }
 
 .tabbar button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Navy footer with a scalloped top edge, like the site. */
+.footer {
+  background: var(--ocean-deep);
+  color: #c8d6e0;
+  margin-top: 70px;
+}
+
+.footer-scallop {
+  height: 22px;
+  background-image: radial-gradient(circle at 50% 0, var(--sand) 13px, transparent 14px);
+  background-size: 30px 22px;
+  background-repeat: repeat-x;
+  background-color: var(--ocean-deep);
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 24px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.footer-inner .wordmark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  color: #fff;
+  text-transform: uppercase;
 }
 
 .tab-body {
@@ -164,6 +223,17 @@ a {
 .card h3 {
   margin-bottom: 8px;
   font-size: 18px;
+}
+
+/* Navy title band across the top of a card, like the site's product cards. */
+.card-band {
+  background: var(--ocean-deep);
+  color: #fff !important;
+  margin: -20px -20px 14px;
+  padding: 10px 20px;
+  border-radius: 11px 11px 0 0;
+  text-align: center;
+  font-size: 19px;
 }
 
 .grid-2 {
@@ -201,23 +271,27 @@ a {
 
 .btn {
   border: none;
-  border-radius: 8px;
-  padding: 10px 18px;
+  border-radius: 999px; /* pill buttons, like the site's CTAs */
+  padding: 11px 22px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .btn.primary {
-  background: var(--ocean-deep);
-  color: #fff;
+  /* Site CTA style: marigold gold with navy text */
+  background: var(--salmon);
+  color: var(--ocean-deep);
 }
 
 .btn.primary:hover {
-  background: #0e1a2c;
+  background: #e69607;
 }
 
 .btn.primary:disabled {
-  background: #9db3c9;
+  background: var(--salmon-soft);
+  color: #4a5f72;
   cursor: wait;
 }
 
@@ -289,14 +363,14 @@ a {
   border-radius: 8px;
   padding: 12px;
   resize: vertical;
-  background: #fbf9f3;
+  background: #f7fafc;
 }
 
 .transcript-editor input {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 12px;
-  background: #fbf9f3;
+  background: #f7fafc;
 }
 
 .dropzone {
@@ -305,7 +379,7 @@ a {
   padding: 28px;
   text-align: center;
   color: var(--ink-soft);
-  background: #fbf9f3;
+  background: #f7fafc;
   transition: border-color 0.15s;
 }
 
@@ -355,7 +429,7 @@ a {
   background:
     linear-gradient(to right, transparent calc(50% - 1px), var(--line) calc(50% - 1px), var(--line) calc(50% + 1px), transparent calc(50% + 1px)),
     linear-gradient(to bottom, transparent calc(50% - 1px), var(--line) calc(50% - 1px), var(--line) calc(50% + 1px), transparent calc(50% + 1px)),
-    #fbf9f3;
+    #f7fafc;
   border: 1px solid var(--line);
   border-radius: 12px;
 }
@@ -472,7 +546,7 @@ a {
 
 .source-chip {
   border: 1.5px solid var(--line);
-  background: #fbf9f3;
+  background: #f7fafc;
   color: var(--ink-soft);
   border-radius: 999px;
   padding: 5px 14px;
@@ -538,7 +612,7 @@ a {
   gap: 10px;
   border-top: 1px solid var(--line);
   padding: 14px;
-  background: #fbf9f3;
+  background: #f7fafc;
 }
 
 .chat-input textarea {
@@ -593,6 +667,7 @@ a {
   font-family: var(--font-display);
   font-size: 34px;
   line-height: 1.1;
+  color: var(--salmon); /* gold numerals on navy, like the site's gold-on-navy pairing */
 }
 
 .stat .label {

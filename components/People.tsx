@@ -8,7 +8,7 @@ export function People({ analysis }: { analysis: Analysis }) {
     <div className="grid-2">
       {analysis.people.map((p) => (
         <div key={p.name} className="card">
-          <h3>{p.name}</h3>
+          <h3 className="card-band">{p.name}</h3>
           <p className="muted" style={{ marginBottom: 8 }}>
             {p.role} · {p.department}
           </p>
