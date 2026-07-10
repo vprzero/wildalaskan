@@ -209,9 +209,12 @@ export default function Home() {
           <header className="masthead">
             <div>
               <h1>
-                AI <span className="accent">Compass</span>
+                Halfdays AI <span className="accent">×</span> Wild Alaskan —{" "}
+                AI Opportunity Roadmap
               </h1>
-              <p className="sub">The Wild Alaskan Company</p>
+              <p className="sub">
+                Helping the marketing team get more from the AI tools they already use.
+              </p>
             </div>
             <button className="btn ghost" onClick={resetAll}>
               Reset everything
@@ -235,7 +238,7 @@ export default function Home() {
       </div>
 
       <div className="gold-band">
-        From 7 conversations to a company-wide AI onboarding roadmap
+        From real team conversations to a practical AI adoption plan
       </div>
 
       <div className="app-shell">
@@ -274,7 +277,7 @@ export default function Home() {
         <div className="footer-scallop" aria-hidden />
         <div className="footer-inner">
           <span className="wordmark">Wild Alaskan Company</span>
-          <span>AI Compass · built for the crew, powered by Claude</span>
+          <span>AI Opportunity Roadmap · by Halfdays AI, powered by Claude</span>
         </div>
       </footer>
     </>

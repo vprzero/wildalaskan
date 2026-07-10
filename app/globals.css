@@ -110,8 +110,10 @@ a {
 }
 
 .masthead h1 {
-  font-size: 30px;
+  font-size: 23px;
   font-weight: 800;
+  max-width: 860px;
+  line-height: 1.25;
 }
 
 .masthead h1 .accent {

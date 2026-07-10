@@ -7,9 +7,9 @@ import "@fontsource/baloo-2/800.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Compass — Wild Alaskan Company",
+  title: "Halfdays AI × Wild Alaskan — AI Opportunity Roadmap",
   description:
-    "Interactive AI-adoption consultant for The Wild Alaskan Company: upload employee transcripts, map pain points and opportunities, and get a phased onboarding roadmap.",
+    "Helping the Wild Alaskan marketing team get more from the AI tools they already use: upload conversation transcripts, map pain points and opportunities, and get a phased adoption roadmap.",
 };
 
 export default function RootLayout({
