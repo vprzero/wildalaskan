@@ -187,6 +187,47 @@ export default function Home() {
     }
   }
 
+  // Download everything (transcripts, digests, analysis, chat, memory) as one
+  // JSON file — insurance against per-URL localStorage (Vercel preview URLs
+  // change per deployment) and a way to move data between browsers.
+  function exportBackup() {
+    const payload = {
+      app: "wac-ai-compass",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      transcripts,
+      analysis,
+      chat,
+      memory,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `wild-alaskan-ai-roadmap-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importBackup(file: File) {
+    setError(null);
+    try {
+      const payload = JSON.parse(await file.text());
+      if (payload?.app !== "wac-ai-compass") {
+        throw new Error("That file doesn't look like a backup from this app.");
+      }
+      if (Array.isArray(payload.transcripts)) setTranscripts(payload.transcripts);
+      if (payload.analysis) setAnalysis(payload.analysis);
+      if (Array.isArray(payload.chat)) setChat(payload.chat);
+      if (Array.isArray(payload.memory)) setMemory(payload.memory);
+      setTab(payload.analysis ? "dashboard" : "transcripts");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not read that backup file.");
+    }
+  }
+
   function resetAll() {
     if (
       !window.confirm(
@@ -216,9 +257,27 @@ export default function Home() {
                 Helping the marketing team get more from the AI tools they already use.
               </p>
             </div>
-            <button className="btn ghost" onClick={resetAll}>
-              Reset everything
-            </button>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button className="btn ghost" onClick={exportBackup} title="Download all transcripts, insights, chat, and memory as one JSON file">
+                Export backup
+              </button>
+              <label className="btn ghost" style={{ cursor: "pointer" }} title="Restore from a backup JSON file">
+                Import backup
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  hidden
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void importBackup(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <button className="btn ghost" onClick={resetAll}>
+                Reset everything
+              </button>
+            </div>
           </header>
 
           <nav className="tabbar" aria-label="Sections">
