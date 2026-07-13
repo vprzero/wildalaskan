@@ -44,13 +44,35 @@ export default function Home() {
 
   // Hydrate from localStorage once on the client.
   useEffect(() => {
-    setTranscripts(store.loadTranscripts());
+    const savedTranscripts = store.loadTranscripts();
     const saved = store.loadAnalysis();
+    setTranscripts(savedTranscripts);
     setAnalysis(saved);
     setChat(store.loadChat());
     setMemory(store.loadMemory());
     if (saved) setTab("dashboard");
     setHydrated(true);
+
+    // First visit on this browser (nothing stored): preload the bundled seed,
+    // if the deployment ships one at public/seed.json. This is how a client
+    // sees the full populated roadmap without importing anything.
+    if (savedTranscripts.length === 0 && !saved) {
+      fetch("/seed.json")
+        .then(async (res) => {
+          if (!res.ok) return;
+          const seed = await res.json().catch(() => null);
+          if (seed?.app !== "wac-ai-compass") return;
+          if (Array.isArray(seed.transcripts)) setTranscripts(seed.transcripts);
+          if (Array.isArray(seed.memory)) setMemory(seed.memory);
+          if (seed.analysis) {
+            setAnalysis(seed.analysis);
+            setTab("dashboard");
+          }
+        })
+        .catch(() => {
+          /* no seed bundled — nothing to do */
+        });
+    }
   }, []);
 
   // Persist on change (after hydration, so we don't clobber saved state).
