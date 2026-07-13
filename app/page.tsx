@@ -41,6 +41,10 @@ export default function Home() {
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Client (read-only) view: no upload tab, no data utilities. Turned on
+  // automatically when this browser was populated from the bundled seed;
+  // ?admin=1 turns it off for editing.
+  const [clientMode, setClientMode] = useState(false);
 
   // Hydrate from localStorage once on the client.
   useEffect(() => {
@@ -51,11 +55,22 @@ export default function Home() {
     setChat(store.loadChat());
     setMemory(store.loadMemory());
     if (saved) setTab("dashboard");
+
+    // ?admin=1 unlocks the full workbench on any browser; otherwise honor
+    // whatever mode this browser was in last time.
+    const isAdmin = new URLSearchParams(window.location.search).get("admin") === "1";
+    if (isAdmin) {
+      store.saveClientMode(false);
+      setClientMode(false);
+    } else {
+      setClientMode(store.loadClientMode());
+    }
     setHydrated(true);
 
     // First visit on this browser (nothing stored): preload the bundled seed,
     // if the deployment ships one at public/seed.json. This is how a client
-    // sees the full populated roadmap without importing anything.
+    // sees the full populated roadmap without importing anything — and seed
+    // viewers get the read-only client view.
     if (savedTranscripts.length === 0 && !saved) {
       fetch("/seed.json")
         .then(async (res) => {
@@ -67,6 +82,10 @@ export default function Home() {
           if (seed.analysis) {
             setAnalysis(seed.analysis);
             setTab("dashboard");
+          }
+          if (!isAdmin) {
+            store.saveClientMode(true);
+            setClientMode(true);
           }
         })
         .catch(() => {
@@ -284,7 +303,7 @@ export default function Home() {
           </header>
 
           <nav className="tabbar" aria-label="Sections">
-            {TABS.map((t) => (
+            {TABS.filter((t) => !(clientMode && t.id === "transcripts")).map((t) => (
               <button
                 key={t.id}
                 className={tab === t.id ? "active" : ""}
@@ -292,7 +311,7 @@ export default function Home() {
                 title={t.needsAnalysis && !analysis ? "Run the analysis first" : undefined}
                 onClick={() => setTab(t.id)}
               >
-                {t.label}
+                {clientMode ? t.label.replace(/^\d+ · /, "") : t.label}
               </button>
             ))}
           </nav>
@@ -341,23 +360,25 @@ export default function Home() {
           <span className="wordmark">Wild Alaskan Company</span>
           <span>AI Opportunity Roadmap · prepared by Halfdays AI</span>
         </div>
-        <div className="footer-utils">
-          <button onClick={exportBackup}>Export data</button>
-          <label>
-            Import data
-            <input
-              type="file"
-              accept=".json,application/json"
-              hidden
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) void importBackup(f);
-                e.target.value = "";
-              }}
-            />
-          </label>
-          <button onClick={resetAll}>Reset</button>
-        </div>
+        {!clientMode && (
+          <div className="footer-utils">
+            <button onClick={exportBackup}>Export data</button>
+            <label>
+              Import data
+              <input
+                type="file"
+                accept=".json,application/json"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void importBackup(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <button onClick={resetAll}>Reset</button>
+          </div>
+        )}
       </footer>
     </>
   );

@@ -9,6 +9,7 @@ const KEYS = {
   analysis: "wac-ai-compass:analysis",
   chat: "wac-ai-compass:chat",
   memory: "wac-ai-compass:memory",
+  clientMode: "wac-ai-compass:client-mode",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -42,6 +43,9 @@ export const store = {
 
   loadMemory: (): string[] => read(KEYS.memory, []),
   saveMemory: (notes: string[]) => write(KEYS.memory, notes),
+
+  loadClientMode: (): boolean => read(KEYS.clientMode, false),
+  saveClientMode: (on: boolean) => write(KEYS.clientMode, on),
 
   clearAll: () => {
     Object.values(KEYS).forEach((k) => {
