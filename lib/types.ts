@@ -50,6 +50,17 @@ export interface PersonInsight {
   quote: string;
 }
 
+export interface ActionItem {
+  /** Imperative, decision-oriented title, e.g. "Approve a 4-week email-drafting pilot". */
+  title: string;
+  /** One sentence: why this matters, grounded in the transcripts. */
+  why: string;
+  /** The concrete first move. */
+  firstStep: string;
+  /** "This week" | "This month" | "This quarter" (free text). */
+  timeframe: string;
+}
+
 export interface ToolInsight {
   name: string;
   /** People who mentioned using it. */
@@ -104,6 +115,8 @@ export interface Analysis {
   tldr: string[];
   /** The AI tools people already use, cross-referenced. */
   toolLandscape: ToolInsight[];
+  /** Six high-level moves the marketing director can make now. */
+  actionables: ActionItem[];
   people: PersonInsight[];
   themes: Theme[];
   matrix: MatrixItem[];

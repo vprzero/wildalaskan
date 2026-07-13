@@ -115,6 +115,12 @@ Respond with ONLY a JSON object — no markdown fences, no prose before or after
   "toolLandscape": [                   // every AI tool (and pivotal software) people mention actually using, cross-referenced
     { "name": string, "users": string[], "currentUse": string, "opportunity": string }
   ],
+  "actionables": [                     // EXACTLY 6 high-level moves the marketing director can make now
+    { "title": string,                 // imperative + decision-oriented, e.g. "Approve a 4-week email-drafting pilot with Maya's team"
+      "why": string,                   // one sentence, grounded in what people actually said
+      "firstStep": string,             // the concrete first move she can take this week
+      "timeframe": string }            // "This week" | "This month" | "This quarter"
+  ],
   "themes": [                          // shared themes across people; merge similar theme tags
     { "name": string, "description": string, "people": string[], "weight": int 1-5 }
   ],
@@ -138,6 +144,7 @@ Respond with ONLY a JSON object — no markdown fences, no prose before or after
 Rules:
 - Ground everything in the digests; reference actual people by name in themes and beneficiaries.
 - tldr: write for a marketing director skimming on her phone — concrete, no filler, no jargon.
+- actionables: these are the marketing director's decision list — each must be something SHE can decide or delegate (approve a pilot, pick a tool plan, assign champions, set guardrails, schedule training, define success metrics), not tasks for engineers. Order by urgency. Exactly 6.
 - toolLandscape: pull from each person's toolsUsed (and any tools evident in pains/opportunities); "opportunity" says how to get MORE from the tool they already have.
 - Quadrants: impact>=4 & effort<=2 → quick-win; impact>=4 & effort>=3 → strategic; impact<=3 & effort<=2 → incremental; else reconsider.
 - Phase 1 of the roadmap should target the highest-pain, most-ready people first.

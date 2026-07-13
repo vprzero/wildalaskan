@@ -12,6 +12,7 @@ export function Dashboard({ analysis }: { analysis: Analysis }) {
   const painCount = analysis.people.reduce((s, p) => s + p.painPoints.length, 0);
   const tldr = analysis.tldr ?? [];
   const tools = analysis.toolLandscape ?? [];
+  const actionables = analysis.actionables ?? [];
 
   return (
     <div>
@@ -55,22 +56,50 @@ export function Dashboard({ analysis }: { analysis: Analysis }) {
         <p>{analysis.companySummary}</p>
       </div>
 
-      <h2 className="section-title">Where to start</h2>
-      <p className="section-lede">The first moves, in order — chosen for high impact and low lift.</p>
-      <div className="grid-2">
-        {analysis.whereToStart.map((item, i) => (
-          <div key={i} className="card" style={{ display: "flex", gap: 18 }}>
-            <span
-              className="display"
-              style={{ fontSize: 32, color: "var(--salmon)", lineHeight: 1 }}
-              aria-hidden
-            >
-              {i + 1}
-            </span>
-            <p style={{ fontSize: 15.5 }}>{item}</p>
+      {actionables.length > 0 ? (
+        <>
+          <h2 className="section-title">The action plan</h2>
+          <p className="section-lede">
+            Six moves you can make now — each one a decision you can take or delegate today.
+          </p>
+          <div className="grid-2">
+            {actionables.map((a, i) => (
+              <div key={i} className="card action-card">
+                <div className="action-head">
+                  <span className="display action-num" aria-hidden>
+                    {i + 1}
+                  </span>
+                  <span className="pill salmon">{a.timeframe}</span>
+                </div>
+                <h3 style={{ fontSize: 18 }}>{a.title}</h3>
+                <p style={{ fontSize: 14.5, marginBottom: 12 }}>{a.why}</p>
+                <p className="action-step">
+                  <strong>First move:</strong> {a.firstStep}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      ) : (
+        <>
+          <h2 className="section-title">Where to start</h2>
+          <p className="section-lede">The first moves, in order — chosen for high impact and low lift.</p>
+          <div className="grid-2">
+            {analysis.whereToStart.map((item, i) => (
+              <div key={i} className="card" style={{ display: "flex", gap: 18 }}>
+                <span
+                  className="display"
+                  style={{ fontSize: 32, color: "var(--salmon)", lineHeight: 1 }}
+                  aria-hidden
+                >
+                  {i + 1}
+                </span>
+                <p style={{ fontSize: 15.5 }}>{item}</p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {tools.length > 0 && (
         <>
