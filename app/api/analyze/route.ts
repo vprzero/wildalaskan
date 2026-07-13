@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { anthropicErrorResponse } from "@/lib/api-errors";
 import { SYNTHESIS_SYSTEM_PROMPT, buildSynthesisUserPrompt } from "@/lib/prompts";
-import type { Analysis, MatrixItem, PersonInsight } from "@/lib/types";
+import type { Analysis, MatrixItem, PersonInsight, ToolInsight } from "@/lib/types";
 
 export const maxDuration = 300;
 
@@ -100,8 +100,22 @@ function normalize(data: Record<string, unknown>): Synthesis {
     },
   );
 
+  const toolLandscape: ToolInsight[] = (
+    Array.isArray(data.toolLandscape) ? data.toolLandscape : []
+  ).map((t) => {
+    const o = (t ?? {}) as Record<string, unknown>;
+    return {
+      name: String(o.name ?? "Tool"),
+      users: strArr(o.users),
+      currentUse: String(o.currentUse ?? ""),
+      opportunity: String(o.opportunity ?? ""),
+    };
+  });
+
   return {
     companySummary: String(data.companySummary ?? ""),
+    tldr: strArr(data.tldr),
+    toolLandscape,
     themes,
     matrix,
     roadmap,

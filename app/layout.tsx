@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-// Display font: Baloo 2 — closest webfont match to the chunky hand-cut headline
-// lettering on wildalaskancompany.com. Body stays on the Helvetica Neue system stack.
-import "@fontsource/baloo-2/600.css";
-import "@fontsource/baloo-2/700.css";
-import "@fontsource/baloo-2/800.css";
+// Typography (Google fonts, self-hosted): Fraunces — a refined editorial serif —
+// for headlines, Source Sans 3 for body/UI.
+import "@fontsource-variable/fraunces";
+import "@fontsource/source-sans-3/400.css";
+import "@fontsource/source-sans-3/600.css";
+import "@fontsource/source-sans-3/700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

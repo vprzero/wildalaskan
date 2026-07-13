@@ -64,6 +64,17 @@ export function People({ analysis }: { analysis: Analysis }) {
             </ul>
           </details>
 
+          {(p.toolsUsed?.length ?? 0) > 0 && (
+            <p style={{ fontSize: 13.5, margin: "10px 0 4px" }}>
+              <strong>Tools they use:</strong>{" "}
+              {p.toolsUsed!.map((tl) => (
+                <span key={tl} className="pill kelp">
+                  {tl}
+                </span>
+              ))}
+            </p>
+          )}
+
           {(p.wants.length > 0 || p.needs.length > 0) && (
             <details>
               <summary style={{ fontWeight: 700, cursor: "pointer", fontSize: 14 }}>

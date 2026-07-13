@@ -44,8 +44,20 @@ export interface PersonInsight {
   opportunities: Opportunity[];
   wants: string[];
   needs: string[];
+  /** AI tools / key software this person mentions actually using. */
+  toolsUsed?: string[];
   /** A representative verbatim quote from their transcript. */
   quote: string;
+}
+
+export interface ToolInsight {
+  name: string;
+  /** People who mentioned using it. */
+  users: string[];
+  /** How it's being used today. */
+  currentUse: string;
+  /** How to get more from it. */
+  opportunity: string;
 }
 
 export interface Theme {
@@ -88,6 +100,10 @@ export interface LearningTrack {
 
 export interface Analysis {
   companySummary: string;
+  /** 4-6 crisp takeaways readable in 60 seconds. */
+  tldr: string[];
+  /** The AI tools people already use, cross-referenced. */
+  toolLandscape: ToolInsight[];
   people: PersonInsight[];
   themes: Theme[];
   matrix: MatrixItem[];

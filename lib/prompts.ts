@@ -14,6 +14,7 @@ You are given ONE employee interview/conversation transcript. Digest it into a s
 - opportunities: concrete ways AI could help THIS person, with impact 1-5 and effort 1-5, tagged with the same style of theme
 - wants: things they explicitly say they'd like
 - needs: things they require to succeed with AI even if unstated (training, guardrails, tooling access)
+- toolsUsed: every AI tool and key piece of software they mention actually using (e.g. ChatGPT, Claude, Canva, Jasper, Notion AI, Excel, Klaviyo) — only tools genuinely mentioned, normalized to their common product name
 - aiReadiness: 1 (skeptical / no exposure) to 5 (power user)
 - currentWorkflow: one or two sentences on how they work today
 - quote: one representative verbatim (or near-verbatim) quote from the transcript
@@ -63,6 +64,11 @@ export const PERSON_SCHEMA = {
     },
     wants: { type: "array", items: { type: "string" } },
     needs: { type: "array", items: { type: "string" } },
+    toolsUsed: {
+      type: "array",
+      items: { type: "string" },
+      description: "AI tools / key software this person mentions actually using",
+    },
     quote: { type: "string" },
   },
   required: [
@@ -75,6 +81,7 @@ export const PERSON_SCHEMA = {
     "opportunities",
     "wants",
     "needs",
+    "toolsUsed",
     "quote",
   ],
   additionalProperties: false,
@@ -104,6 +111,10 @@ Respond with ONLY a JSON object — no markdown fences, no prose before or after
 
 {
   "companySummary": string,           // 3-5 sentences: where the org stands on AI readiness and the biggest levers
+  "tldr": string[],                    // 4-6 crisp takeaways, each <= 22 words, readable in 60 seconds; lead with the single most important thing
+  "toolLandscape": [                   // every AI tool (and pivotal software) people mention actually using, cross-referenced
+    { "name": string, "users": string[], "currentUse": string, "opportunity": string }
+  ],
   "themes": [                          // shared themes across people; merge similar theme tags
     { "name": string, "description": string, "people": string[], "weight": int 1-5 }
   ],
@@ -126,6 +137,8 @@ Respond with ONLY a JSON object — no markdown fences, no prose before or after
 
 Rules:
 - Ground everything in the digests; reference actual people by name in themes and beneficiaries.
+- tldr: write for a marketing director skimming on her phone — concrete, no filler, no jargon.
+- toolLandscape: pull from each person's toolsUsed (and any tools evident in pains/opportunities); "opportunity" says how to get MORE from the tool they already have.
 - Quadrants: impact>=4 & effort<=2 → quick-win; impact>=4 & effort>=3 → strategic; impact<=3 & effort<=2 → incremental; else reconsider.
 - Phase 1 of the roadmap should target the highest-pain, most-ready people first.
 - Be specific and practical — name real workflows from the digests, not generic advice.

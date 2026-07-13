@@ -26,8 +26,8 @@
   --q-incremental: #b07d1f; /* deep gold */
   --q-reconsider: #6b6f76; /* warm grey */
 
-  --font-body: "Helvetica Neue", Helvetica, Arial, Inter, system-ui, sans-serif;
-  --font-display: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --font-body: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
 }
 
 * {
@@ -45,7 +45,8 @@ body {
   font-family: var(--font-body);
   background: var(--sand);
   color: var(--ink);
-  line-height: 1.55;
+  line-height: 1.6;
+  font-size: 15.5px;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -54,9 +55,20 @@ h2,
 h3,
 .display {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: 0;
+  font-weight: 600;
+  font-variation-settings: "SOFT" 40, "WONK" 0, "opsz" 40;
+  letter-spacing: -0.01em;
   color: var(--ocean-deep);
+}
+
+/* Small uppercase label above titles — quiet structure without more ink. */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold-deep);
+  margin-bottom: 2px;
 }
 
 button {
@@ -110,19 +122,15 @@ a {
 }
 
 .masthead h1 {
-  font-size: 23px;
-  font-weight: 800;
-  max-width: 860px;
-  line-height: 1.25;
-}
-
-.masthead h1 .accent {
-  color: #b07d1f;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .masthead .sub {
   color: var(--ink-soft);
-  font-size: 14px;
+  font-size: 15px;
+  margin-top: 4px;
 }
 
 /* Gold promo-style band under the header, echoing the site's offer banner. */
@@ -210,7 +218,7 @@ a {
 }
 
 .tab-body {
-  padding-top: 24px;
+  padding-top: 40px;
 }
 
 /* ---------- shared blocks ---------- */
@@ -218,36 +226,86 @@ a {
 .card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 26px 28px;
+  box-shadow: 0 1px 2px rgba(18, 52, 78, 0.05);
 }
 
 .card h3 {
-  margin-bottom: 8px;
-  font-size: 18px;
+  margin-bottom: 10px;
+  font-size: 19px;
+}
+
+/* Prose shouldn't run edge-to-edge on wide screens. */
+.card p,
+.card li {
+  max-width: 72ch;
 }
 
 /* Navy title band across the top of a card, like the site's product cards. */
 .card-band {
   background: var(--ocean-deep);
   color: #fff !important;
-  margin: -20px -20px 14px;
-  padding: 10px 20px;
-  border-radius: 11px 11px 0 0;
+  margin: -26px -28px 16px;
+  padding: 12px 28px;
+  border-radius: 13px 13px 0 0;
   text-align: center;
   font-size: 19px;
+}
+
+/* ---------- 60-second brief ---------- */
+
+.brief {
+  border-left: 4px solid var(--salmon);
+  padding: 30px 34px;
+  margin-bottom: 40px;
+}
+
+.brief ol {
+  list-style: none;
+  counter-reset: brief;
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.brief li {
+  counter-increment: brief;
+  position: relative;
+  padding-left: 40px;
+  font-size: 16.5px;
+  line-height: 1.5;
+  max-width: 66ch;
+}
+
+.brief li::before {
+  content: counter(brief);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--sand-deep);
+  color: var(--ocean-deep);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 
 .pill {
@@ -654,8 +712,8 @@ a {
 .stat-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 20px;
+  margin-bottom: 40px;
 }
 
 .stat {
@@ -680,8 +738,43 @@ a {
 }
 
 .section-title {
-  margin: 28px 0 12px;
-  font-size: 20px;
+  margin: 52px 0 8px;
+  font-size: 23px;
+}
+
+/* Optional one-liner under a section title — context without clutter. */
+.section-lede {
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  margin: 0 0 18px;
+  max-width: 68ch;
+}
+
+/* Quiet utility links in the footer — present, but not part of the product story. */
+.footer-utils {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 26px;
+  display: flex;
+  gap: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 16px;
+}
+
+.footer-utils button,
+.footer-utils label {
+  background: none;
+  border: none;
+  color: #6f8aa0;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.footer-utils button:hover,
+.footer-utils label:hover {
+  color: #b7c9d6;
+  text-decoration: underline;
 }
 
 @media (max-width: 640px) {

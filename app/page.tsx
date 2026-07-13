@@ -120,8 +120,12 @@ export default function Home() {
         .filter(({ t }) => t.text.trim().length > 0);
 
       // Stage 1 — digest, skipping transcripts whose cached digest is still fresh.
+      // DIGEST_VERSION is part of the hash: bumping it re-digests everything once
+      // (e.g. when the digest schema learns new fields like toolsUsed).
+      const DIGEST_VERSION = "v2:";
       const stale = jobs.filter(
-        ({ t }) => !t.digest || t.digestHash !== contentHash(t.name + t.role + t.text),
+        ({ t }) =>
+          !t.digest || t.digestHash !== contentHash(DIGEST_VERSION + t.name + t.role + t.text),
       );
       let done = 0;
       const CONCURRENCY = 3;
@@ -139,7 +143,7 @@ export default function Home() {
             working[i] = {
               ...t,
               digest: r.value,
-              digestHash: contentHash(t.name + t.role + t.text),
+              digestHash: contentHash(DIGEST_VERSION + t.name + t.role + t.text),
             };
           } else {
             failures.push(r.reason instanceof Error ? r.reason.message : String(r.reason));
@@ -249,34 +253,11 @@ export default function Home() {
         <div className="topbar-inner">
           <header className="masthead">
             <div>
-              <h1>
-                Halfdays AI <span className="accent">×</span> Wild Alaskan —{" "}
-                AI Opportunity Roadmap
-              </h1>
+              <p className="eyebrow">Wild Alaskan Company</p>
+              <h1>AI Opportunity Roadmap</h1>
               <p className="sub">
                 Helping the marketing team get more from the AI tools they already use.
               </p>
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button className="btn ghost" onClick={exportBackup} title="Download all transcripts, insights, chat, and memory as one JSON file">
-                Export backup
-              </button>
-              <label className="btn ghost" style={{ cursor: "pointer" }} title="Restore from a backup JSON file">
-                Import backup
-                <input
-                  type="file"
-                  accept=".json,application/json"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void importBackup(f);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              <button className="btn ghost" onClick={resetAll}>
-                Reset everything
-              </button>
             </div>
           </header>
 
@@ -336,7 +317,24 @@ export default function Home() {
         <div className="footer-scallop" aria-hidden />
         <div className="footer-inner">
           <span className="wordmark">Wild Alaskan Company</span>
-          <span>AI Opportunity Roadmap · by Halfdays AI, powered by Claude</span>
+          <span>AI Opportunity Roadmap · prepared by Halfdays AI</span>
+        </div>
+        <div className="footer-utils">
+          <button onClick={exportBackup}>Export data</button>
+          <label>
+            Import data
+            <input
+              type="file"
+              accept=".json,application/json"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void importBackup(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <button onClick={resetAll}>Reset</button>
         </div>
       </footer>
     </>
