@@ -53,7 +53,7 @@ export function Dashboard({ analysis }: { analysis: Analysis }) {
       <div className="card">
         <p className="eyebrow">Context</p>
         <h3>Where the team stands</h3>
-        <p>{analysis.companySummary}</p>
+        <p className="prose-cols">{analysis.companySummary}</p>
       </div>
 
       {actionables.length > 0 ? (

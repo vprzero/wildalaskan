@@ -31,7 +31,7 @@ export function Chat({
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // IDs of raw transcripts Compass should ground on (NotebookLM-style sources).
+  // IDs of raw transcripts Grover should ground on (NotebookLM-style sources).
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -120,9 +120,9 @@ export function Chat({
 
       <div className="source-picker card">
         <strong style={{ fontSize: 14 }}>📚 Sources</strong>
-        <p className="muted" style={{ margin: "2px 0 8px" }}>
-          Compass always knows the insights &amp; roadmap. Add raw transcripts to ask
-          about what people actually said, get verbatim quotes, or fact-check a finding.
+        <p className="muted" style={{ margin: "2px 0 8px", maxWidth: "none" }}>
+          Grover always knows the insights &amp; roadmap — add transcripts to ask what
+          people actually said.
         </p>
         <div className="source-chips">
           <span
@@ -165,11 +165,11 @@ export function Chat({
         <div className="chat-scroll" ref={scrollRef}>
           {messages.length === 0 && (
             <div className="empty-state" style={{ padding: 30 }}>
-              <h2 style={{ fontSize: 20 }}>Meet Compass 🧭</h2>
+              <h2 style={{ fontSize: 22 }}>Meet Grover</h2>
               <p style={{ marginBottom: 16 }}>
-                Your in-house AI adoption consultant. It knows the roadmap, the
-                matrix, and everyone&apos;s pain points — and it remembers decisions
-                between sessions.
+                Your AI consultant. Grover knows the roadmap, the matrix, and
+                everyone&apos;s pain points — and remembers decisions between
+                sessions.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
                 {SUGGESTIONS.map((s) => (
@@ -219,7 +219,7 @@ export function Chat({
       </div>
 
       <div className="card memory-list" style={{ marginTop: 20 }}>
-        <h3>🧠 What Compass remembers</h3>
+        <h3>🧠 What Grover remembers</h3>
         <p className="muted">
           Durable facts and decisions the consultant carries into every future
           conversation. Stored in this browser.

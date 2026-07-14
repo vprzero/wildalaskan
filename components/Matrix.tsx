@@ -32,11 +32,34 @@ const QUADRANT_META: Record<
 export function Matrix({ analysis }: { analysis: Analysis }) {
   const [selected, setSelected] = useState<number | null>(null);
 
-  // impact (1-5) → y (top = high impact); effort (1-5) → x (right = high effort)
-  const toPos = (item: MatrixItem) => ({
-    left: `${8 + ((item.effort - 1) / 4) * 84}%`,
-    top: `${8 + ((5 - item.impact) / 4) * 84}%`,
-  });
+  // The plot shows only high-impact initiatives (the two top quadrants) — the
+  // low-impact half was mostly empty air. Everything still appears in the
+  // lists below.
+  const plotted = analysis.matrix
+    .map((item, i) => ({ item, i }))
+    .filter(({ item }) => item.impact >= 4);
+
+  // Initiatives often share the exact same scores; fan ties out horizontally
+  // so every dot stays visible instead of stacking.
+  const tieIndex = new Map<string, number>();
+  const tieCount = new Map<string, number>();
+  for (const { item } of plotted) {
+    const key = `${item.impact}-${item.effort}`;
+    tieCount.set(key, (tieCount.get(key) ?? 0) + 1);
+  }
+
+  // effort (1-5) → x (right = high effort); impact (4-5) → two vertical bands
+  const toPos = (item: MatrixItem) => {
+    const key = `${item.impact}-${item.effort}`;
+    const n = tieCount.get(key) ?? 1;
+    const k = tieIndex.get(key) ?? 0;
+    tieIndex.set(key, k + 1);
+    const spread = (k - (n - 1) / 2) * 4.2; // percent offset per tied sibling
+    return {
+      left: `${8 + ((item.effort - 1) / 4) * 84 + spread}%`,
+      top: `${22 + (5 - item.impact) * 42 + (k % 2 === 0 ? 0 : 7)}%`,
+    };
+  };
 
   const sel = selected !== null ? analysis.matrix[selected] : null;
 
@@ -52,20 +75,14 @@ export function Matrix({ analysis }: { analysis: Analysis }) {
       </div>
 
       <div className="matrix-wrap">
-        <div className="matrix-plot" role="img" aria-label="Impact versus effort prioritization matrix">
+        <div className="matrix-plot" role="img" aria-label="High-impact initiatives by effort">
           <span className="matrix-label" style={{ top: 0, left: 0 }}>
             Quick wins
           </span>
           <span className="matrix-label" style={{ top: 0, right: 0 }}>
             Strategic bets
           </span>
-          <span className="matrix-label" style={{ bottom: 0, left: 0 }}>
-            Incremental
-          </span>
-          <span className="matrix-label" style={{ bottom: 0, right: 0 }}>
-            Reconsider
-          </span>
-          {analysis.matrix.map((item, i) => (
+          {plotted.map(({ item, i }) => (
             <button
               key={i}
               className={`matrix-dot${selected === i ? " selected" : ""}`}
@@ -82,9 +99,6 @@ export function Matrix({ analysis }: { analysis: Analysis }) {
           <span>← Low effort</span>
           <span>Effort →</span>
         </div>
-        <p className="axis-caption" style={{ justifyContent: "flex-start" }}>
-          Vertical axis: impact (higher = bigger win for employees &amp; members)
-        </p>
       </div>
 
       {sel && (
