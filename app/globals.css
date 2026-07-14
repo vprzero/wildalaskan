@@ -398,7 +398,7 @@ a {
   padding-left: 40px;
   font-size: 16.5px;
   line-height: 1.5;
-  max-width: 66ch;
+  max-width: none; /* full card width — each takeaway fits on one line */
 }
 
 .brief li::before {
