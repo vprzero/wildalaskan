@@ -4,7 +4,7 @@ import type { Analysis } from "@/lib/types";
 
 export function Roadmap({ analysis }: { analysis: Analysis }) {
   return (
-    <div style={{ maxWidth: 820 }}>
+    <div style={{ maxWidth: 1080 }}>
       {analysis.roadmap.map((phase, i) => (
         <div key={i} className="phase">
           <span className="timeframe">{phase.timeframe}</span>

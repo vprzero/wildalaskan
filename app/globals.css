@@ -318,7 +318,8 @@ a {
 .person-item-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 6px 12px;
   margin-top: 5px;
 }
 
@@ -439,6 +440,7 @@ a {
   background: var(--sand-deep);
   color: var(--ocean);
   margin: 0 6px 6px 0;
+  white-space: nowrap; /* tags never wrap mid-word into lumpy blobs */
 }
 
 .pill.salmon {
@@ -709,6 +711,11 @@ a {
 
 .phase ul {
   margin: 8px 0 8px 20px;
+}
+
+/* Roadmap bullets get the full card width so most stay on one line. */
+.phase li {
+  max-width: none;
 }
 
 /* ---------- chat ---------- */
