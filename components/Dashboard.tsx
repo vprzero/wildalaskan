@@ -160,7 +160,7 @@ export function Dashboard({ analysis }: { analysis: Analysis }) {
           <div className="card">
             <ul style={{ marginLeft: 20, display: "grid", gap: 8 }}>
               {analysis.risks.map((r, i) => (
-                <li key={i} style={{ fontSize: 14.5 }}>
+                <li key={i} style={{ fontSize: 14.5, maxWidth: "none" }}>
                   {r}
                 </li>
               ))}
