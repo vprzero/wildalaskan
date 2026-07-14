@@ -165,6 +165,7 @@ export function buildConsultantSystemPrompt(
   analysisJson: string | null,
   memoryNotes: string[],
   sources: ChatSource[] = [],
+  consultantNotesText: string | null = null,
 ): string {
   let prompt = `You are "Grover" — The Wild Alaskan Company's in-house AI-adoption consultant. Wild Alaskan (wildalaskancompany.com) is a member-based subscription company delivering wild-caught, sustainably sourced Alaskan seafood to people's doorsteps; its culture values sustainability, craft, and genuinely caring for members.
 
@@ -191,6 +192,10 @@ Formatting: use markdown, keep answers tight, prefer bullet points and numbered 
       )
       .join("\n\n");
     prompt += `\n\nThe user has also given you the RAW transcripts of these conversations. When a question is about what someone actually said, quote the transcript verbatim and name whose transcript it came from (e.g. "Maya's transcript"). If the analysis and a transcript disagree, trust the transcript and say so.\n\n${blocks}`;
+  }
+
+  if (consultantNotesText) {
+    prompt += `\n\nThe human consultant (Halfdays AI) has published these recommendations to the client. Treat them as authoritative direction — align your advice with them and reference them when relevant:\n<consultant_recommendations>\n${consultantNotesText}\n</consultant_recommendations>`;
   }
 
   if (memoryNotes.length > 0) {

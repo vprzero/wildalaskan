@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Chat } from "@/components/Chat";
 import { Dashboard } from "@/components/Dashboard";
+import { Notes } from "@/components/Notes";
+import { consultantNotes } from "@/content/consultant-notes";
 import { Learning } from "@/components/Learning";
 import { Matrix } from "@/components/Matrix";
 import { People } from "@/components/People";
@@ -19,7 +21,10 @@ type Tab =
   | "matrix"
   | "roadmap"
   | "learning"
+  | "notes"
   | "consultant";
+
+const HAS_NOTES = consultantNotes.intro.length > 0 || consultantNotes.sections.length > 0;
 
 const TABS: { id: Tab; label: string; needsAnalysis: boolean }[] = [
   { id: "transcripts", label: "1 · Transcripts", needsAnalysis: false },
@@ -28,6 +33,9 @@ const TABS: { id: Tab; label: string; needsAnalysis: boolean }[] = [
   { id: "matrix", label: "4 · Priority matrix", needsAnalysis: true },
   { id: "roadmap", label: "5 · Roadmap", needsAnalysis: true },
   { id: "learning", label: "6 · Learning paths", needsAnalysis: true },
+  ...(HAS_NOTES
+    ? [{ id: "notes" as Tab, label: "7 · Recommendations", needsAnalysis: false }]
+    : []),
   { id: "consultant", label: "🧭 Consultant", needsAnalysis: false },
 ];
 
@@ -341,6 +349,7 @@ export default function Home() {
         {tab === "matrix" && analysis && <Matrix analysis={analysis} />}
         {tab === "roadmap" && analysis && <Roadmap analysis={analysis} />}
         {tab === "learning" && analysis && <Learning analysis={analysis} />}
+        {tab === "notes" && HAS_NOTES && <Notes notes={consultantNotes} />}
         {tab === "consultant" && (
           <Chat
             messages={chat}

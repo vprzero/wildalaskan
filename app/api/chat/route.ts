@@ -1,7 +1,20 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { consultantNotes } from "@/content/consultant-notes";
 import { anthropicErrorResponse } from "@/lib/api-errors";
 import { buildConsultantSystemPrompt, type ChatSource } from "@/lib/prompts";
+
+function notesAsText(): string | null {
+  const { intro, sections, closing } = consultantNotes;
+  if (intro.length === 0 && sections.length === 0) return null;
+  const parts: string[] = [...intro];
+  for (const s of sections) {
+    parts.push(`## ${s.title}`, ...s.paragraphs);
+    if (s.bullets?.length) parts.push(...s.bullets.map((b) => `- ${b}`));
+  }
+  if (closing) parts.push(closing);
+  return parts.join("\n");
+}
 import type { ChatMessage } from "@/lib/types";
 
 export const maxDuration = 120;
@@ -56,6 +69,7 @@ export async function POST(req: NextRequest) {
     body.analysis ? JSON.stringify(body.analysis) : null,
     Array.isArray(body.memoryNotes) ? body.memoryNotes.slice(0, 100) : [],
     sources,
+    notesAsText(),
   );
 
   const client = new Anthropic({ maxRetries: 5 });
